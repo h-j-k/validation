@@ -12,7 +12,10 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -33,7 +36,16 @@ public class ValidatorTest {
     }
 
     enum TestWidget implements Widget {
-        NULL, INACTIVE, NOT_READY, READY;
+        NULL(notNull()),
+        INACTIVE(Widget::isActive),
+        NOT_READY(Widget::isReady),
+        READY(w -> true);
+
+        private final Predicate<Widget> test;
+
+        private TestWidget(Predicate<Widget> test) {
+            this.test = test;
+        }
 
         @Override
         public boolean isActive() {
@@ -45,22 +57,30 @@ public class ValidatorTest {
             return this == READY;
         }
 
-        private Widget get() {
+        public Widget get() {
             return this == NULL ? null : this;
         }
 
-        public String getFailureReason() {
+        public Predicate<Widget> test() {
+            return test;
+        }
+
+        public String failureReason() {
             return "Widget is " + name().toLowerCase().replace('_', ' ') + ".";
         }
     }
 
-    private static final Predicate<Widget>[] RULES = new Predicate[] { notNull(),
-            w -> ((Widget) w).isActive(), w -> ((Widget) w).isReady() };
-    private static final String[] REASONS = EnumSet
-            .complementOf(EnumSet.of(TestWidget.READY)).stream()
-            .map(TestWidget::getFailureReason).toArray(String[]::new);
+    private static final Predicate<Widget>[] RULES = get(TestWidget::test, Predicate[]::new);
+    private static final String[] REASONS = get(TestWidget::failureReason, String[]::new);
     private static final Map<Predicate<Widget>, String> RULE_MAP = IntStream.range(0, 3)
             .collect(LinkedHashMap::new, (m, i) -> m.put(RULES[i], REASONS[i]), Map::putAll);
+    private static final List<Rule<Widget>> RULE_LIST = Stream.of(RULES)
+            .map(r -> Rule.of(r, null)).collect(Collectors.toList());
+
+    private static <R> R[] get(Function<TestWidget, R> mapper, IntFunction<R[]> generator) {
+        return EnumSet.complementOf(EnumSet.of(TestWidget.READY))
+                .stream().map(mapper).toArray(generator);
+    }
 
     private static void assertReady(Widget widget) {
         assertThat(widget, equalTo(TestWidget.READY));
@@ -98,7 +118,7 @@ public class ValidatorTest {
             check(widget.get(), Arrays.asList(RULES), Arrays.asList(REASONS))
                     .ifPresent(ValidatorTest::assertReady);
         } catch (IllegalStateException e) {
-            assertException(e, widget.getFailureReason());
+            assertException(e, widget.failureReason());
         }
     }
 
@@ -107,14 +127,13 @@ public class ValidatorTest {
         try {
             check(widget.get(), RULE_MAP).ifPresent(ValidatorTest::assertReady);
         } catch (IllegalStateException e) {
-            assertException(e, widget.getFailureReason());
+            assertException(e, widget.failureReason());
         }
     }
 
     @Test
     public void testRuleCreation() {
-        check(TestWidget.READY, false, Stream.of(RULES).map(r -> Rule.of(r, null))
-                .collect(Collectors.toList())).ifPresent(ValidatorTest::assertReady);
+        check(TestWidget.READY, false, RULE_LIST).ifPresent(ValidatorTest::assertReady);
     }
 
     @Test
