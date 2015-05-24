@@ -34,10 +34,13 @@ The Validator library abstracts out the checks as a series of `Predicate`s inste
 
 Alternatively, custom reasons may be supplied for the thrown `IllegalStateException` for invalidated cases: 
 
-    T payload = Validator.check(input, 
-                                Arrays.asList(Rule.of(Validator.notNull(), "Invalid input."),
-                                    Rule.of(v -> correctValue.equals(v.field), "Incorrect field value."),
-                                    Rule.of(InputType::markedForProcessing, "Not marked for processing."))).get();
+    T payload = Validator.check(input, Arrays.asList(
+                                Rule.of(Validator.notNull(), 
+                                        "Invalid input."),
+                                Rule.of(v -> correctValue.equals(v.field), 
+                                        "Incorrect field value."),
+                                Rule.of(InputType::markedForProcessing, 
+                                        "Not marked for processing."))).get();
 
 Bugs/feedback
 ---
