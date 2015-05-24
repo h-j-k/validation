@@ -148,7 +148,7 @@ public final class Validator {
      * @throws IllegalStateException with the message given by the corresponding reason
      *             supplied, when the validation fails
      */
-    private static <T> Optional<T> check(T value, boolean throwException,
+    public static <T> Optional<T> check(T value, boolean throwException,
             List<Rule<T>> rules) {
         Objects.requireNonNull(rules);
         Optional<Rule<T>> failed = rules.stream()
