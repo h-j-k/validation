@@ -20,6 +20,7 @@ import static com.ikueb.validation.Validator.filter;
 import static com.ikueb.validation.Validator.notNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.testng.Assert.assertFalse;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -113,8 +114,13 @@ public class ValidatorTest {
     }
 
     @Test(dataProvider = "widget-test-cases")
-    public void testNoException(TestWidget widget) {
+    public void testSimpleUsage(TestWidget widget) {
         check(widget.get(), RULES).ifPresent(ValidatorTest::assertReady);
+    }
+
+    @Test(dataProvider = "widget-test-cases")
+    public void testNoException(TestWidget widget) {
+        check(widget.get(), false, RULES).ifPresent(ValidatorTest::assertReady);
     }
 
     @Test(dataProvider = "widget-test-cases")
@@ -148,7 +154,7 @@ public class ValidatorTest {
 
     @Test
     public void testRuleCreation() {
-        check(TestWidget.READY, false, RULE_LIST).ifPresent(ValidatorTest::assertReady);
+        check(TestWidget.READY, RULE_LIST).ifPresent(ValidatorTest::assertReady);
     }
 
     @Test
@@ -158,9 +164,15 @@ public class ValidatorTest {
                 equalTo(EnumSet.of(TestWidget.READY)));
     }
 
+    @Test
+    public void testOppositeRules() {
+        assertFalse(check(null, v -> v == null, notNull()).isPresent());
+    }
+
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testListsOfDifferentSizesThrows() {
-        check(TestWidget.READY, Arrays.asList(RULES), Collections.emptyList());
+        check(TestWidget.READY, Collections.singletonList(notNull()),
+                Collections.emptyList());
     }
 
     private static final String TEST = " TEST ";

@@ -26,6 +26,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * An utility class that validates a given value against {@link Predicate} 'rules' and
@@ -67,7 +68,8 @@ public final class Validator {
      */
     @SafeVarargs
     public static <T> Optional<T> check(T value, Predicate<T>... predicates) {
-        return check(value, false, predicates);
+        return Optional.ofNullable(value).filter(Stream.of(predicates)
+                .reduce((a, b) -> a.and(b)).get());
     }
 
     /**
@@ -86,7 +88,10 @@ public final class Validator {
     public static <T> Optional<T> check(T value, boolean throwException,
             Predicate<T>... predicates) {
         Objects.requireNonNull(predicates);
-        return check(value, throwException, toRules(predicates.length, (rules, i) ->
+        if (!throwException) {
+            return check(value, predicates);
+        }
+        return check(value, toRules(predicates.length, (rules, i) ->
             rules.add(Rule.of(predicates[i], i + 1))));
     }
 
@@ -107,7 +112,7 @@ public final class Validator {
         if (predicates.size() != reasons.size()) {
             throw new IllegalArgumentException("Predicate and reason counts do not match.");
         }
-        return check(value, true, toRules(predicates.size(), (rules, i) ->
+        return check(value, toRules(predicates.size(), (rules, i) ->
                 rules.add(Rule.of(predicates.get(i), reasons.get(i)))));
     }
 
@@ -126,9 +131,29 @@ public final class Validator {
     public static <T> Optional<T> check(T value,
             Map<Predicate<T>, String> validationMap) {
         Objects.requireNonNull(validationMap);
-        return check(value, true, validationMap.entrySet().stream()
+        return check(value, validationMap.entrySet().stream()
                         .map(entry -> Rule.of(entry.getKey(), entry.getValue()))
                         .collect(Collectors.toList()));
+    }
+
+    /**
+     * Validates if the value satisfies all {@link Rule} rules.
+     *
+     * @param value the value to validate
+     * @param rules the {@link Rule}s to validate with
+     * @return an {@link Optional} wrapper over the value
+     * @throws IllegalStateException with the message given by the corresponding reason
+     *             supplied, when the validation fails
+     */
+    public static <T> Optional<T> check(T value, List<Rule<T>> rules) {
+        Objects.requireNonNull(rules);
+        Optional<Rule<T>> failed = rules.stream().filter(rule -> rule.test(value))
+                .findFirst();
+        if (failed.isPresent()) {
+            throw new IllegalStateException(Objects.toString(failed.get(),
+                    "Validation failed."));
+        }
+        return Optional.of(value);
     }
 
     /**
@@ -145,34 +170,9 @@ public final class Validator {
         Objects.requireNonNull(values);
         Objects.requireNonNull(supplier);
         Objects.requireNonNull(predicates);
-        List<Rule<T>> list = toRules(predicates.length,
-                (rules, i) -> rules.add(Rule.of(predicates[i], null)));
-        return values.stream().map(v -> check(v, false, list))
-                .filter(Optional::isPresent).map(Optional::get)
+        return values.stream()
+                .filter(Stream.of(predicates).reduce((a, b) -> a.and(b)).get())
                 .collect(Collectors.toCollection(supplier));
-    }
-
-    /**
-     * Validates if the value satisfies all {@link Rule} rules.
-     *
-     * @param value the value to validate
-     * @param throwException {@code true} to throw an {@link IllegalArgumentException}
-     *            instead for validation failure
-     * @param rules the {@link Rule}s to validate with
-     * @return an {@link Optional} wrapper over the value
-     * @throws IllegalStateException with the message given by the corresponding reason
-     *             supplied, when the validation fails
-     */
-    public static <T> Optional<T> check(T value, boolean throwException,
-            List<Rule<T>> rules) {
-        Objects.requireNonNull(rules);
-        Optional<Rule<T>> failed = rules.stream()
-                .filter(rule -> rule.test(value)).findFirst();
-        if (failed.isPresent() && throwException) {
-            throw new IllegalStateException(Objects.toString(failed.get(),
-                    "Validation failed."));
-        }
-        return failed.isPresent() ? Optional.empty() : Optional.of(value);
     }
 
     /**
