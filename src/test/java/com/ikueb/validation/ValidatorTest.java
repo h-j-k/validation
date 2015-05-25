@@ -90,8 +90,8 @@ public class ValidatorTest {
     private static final String[] REASONS = get(TestWidget::failureReason, String[]::new);
     private static final Map<Predicate<Widget>, String> RULE_MAP = IntStream.range(0, 3)
             .collect(LinkedHashMap::new, (m, i) -> m.put(RULES[i], REASONS[i]), Map::putAll);
-    private static final List<Rule<Widget>> RULE_LIST = Stream.of(RULES)
-            .map(r -> Rule.of(r, null)).collect(Collectors.toList());
+    private static final List<Trigger<Widget>> RULE_LIST = Stream.of(RULES)
+            .map(r -> Trigger.of(r, null)).collect(Collectors.toList());
 
     private static <R> R[] get(Function<TestWidget, R> mapper, IntFunction<R[]> generator) {
         return EnumSet.complementOf(EnumSet.of(TestWidget.READY))

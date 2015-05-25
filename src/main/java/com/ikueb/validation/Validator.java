@@ -92,7 +92,7 @@ public final class Validator {
             return check(value, predicates);
         }
         return check(value, toRules(predicates.length, (rules, i) ->
-            rules.add(Rule.of(predicates[i], i + 1))));
+            rules.add(Trigger.of(predicates[i], i + 1))));
     }
 
     /**
@@ -113,7 +113,7 @@ public final class Validator {
             throw new IllegalArgumentException("Predicate and reason counts do not match.");
         }
         return check(value, toRules(predicates.size(), (rules, i) ->
-                rules.add(Rule.of(predicates.get(i), reasons.get(i)))));
+                rules.add(Trigger.of(predicates.get(i), reasons.get(i)))));
     }
 
     /**
@@ -132,23 +132,23 @@ public final class Validator {
             Map<Predicate<T>, String> validationMap) {
         Objects.requireNonNull(validationMap);
         return check(value, validationMap.entrySet().stream()
-                        .map(entry -> Rule.of(entry.getKey(), entry.getValue()))
+                        .map(entry -> Trigger.of(entry.getKey(), entry.getValue()))
                         .collect(Collectors.toList()));
     }
 
     /**
-     * Validates if the value satisfies all {@link Rule} rules.
+     * Validates if the value satisfies all {@link Trigger} rules.
      *
      * @param value the value to validate
-     * @param rules the {@link Rule}s to validate with
+     * @param rules the {@link Trigger}s to validate with
      * @return an {@link Optional} wrapper over the value
      * @throws IllegalStateException with the message given by the corresponding reason
      *             supplied, when the validation fails
      */
-    public static <T> Optional<T> check(T value, List<Rule<T>> rules) {
+    public static <T> Optional<T> check(T value, List<Trigger<T>> rules) {
         Objects.requireNonNull(rules);
-        Optional<Rule<T>> failed = rules.stream().filter(rule -> rule.test(value))
-                .findFirst();
+        Optional<Trigger<T>> failed = rules.stream()
+                .filter(rule -> rule.test(value)).findFirst();
         if (failed.isPresent()) {
             throw new IllegalStateException(Objects.toString(failed.get(),
                     "Validation failed."));
@@ -179,10 +179,10 @@ public final class Validator {
      * @param endExclusive the exclusive upper bound to
      *            {@link IntStream#range(int, int)}
      * @param accumulator the accumulator to use
-     * @return a {@link List} of {@link Rule}s
+     * @return a {@link List} of {@link Trigger}s
      */
-    private static <T> List<Rule<T>> toRules(int endExclusive,
-            ObjIntConsumer<List<Rule<T>>> accumulator) {
+    private static <T> List<Trigger<T>> toRules(int endExclusive,
+            ObjIntConsumer<List<Trigger<T>>> accumulator) {
         return IntStream.range(0, endExclusive).collect(ArrayList::new,
                 accumulator, List::addAll);
     }

@@ -24,23 +24,23 @@ import java.util.function.Predicate;
  *
  * @param <T> the requested type
  */
-public final class Rule<T> implements Predicate<T> {
+public final class Trigger<T> implements Predicate<T> {
     private static final String FAIL_REASON = "Validation rule #%d failed.";
     private final Predicate<T> successCase;
     private final String failureReason;
 
-    private Rule(Predicate<T> successCase, String failureReason) {
+    private Trigger(Predicate<T> successCase, String failureReason) {
         this.successCase = Objects.requireNonNull(successCase);
-        this.failureReason = failureReason;
+        this.failureReason = Objects.requireNonNull(failureReason);
     }
 
-    static <T> Rule<T> of(Predicate<T> successCase, int index) {
+    static <T> Trigger<T> of(Predicate<T> successCase, int index) {
         return of(successCase, String.format(FAIL_REASON, Integer.valueOf(index)));
     }
 
-    static <T> Rule<T> of(Predicate<T> successCase,
+    static <T> Trigger<T> of(Predicate<T> successCase,
             String failureReason) {
-        return new Rule<>(successCase, failureReason);
+        return new Trigger<>(successCase, failureReason);
     }
 
     @Override
