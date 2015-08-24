@@ -165,7 +165,8 @@ public final class Validator {
      * @param predicates the {@link Predicate}s to use
      * @return a {@link Collection} of validated values
      */
-    public static <T> Collection<T> filter(Collection<T> values,
+    @SafeVarargs
+	public static <T> Collection<T> filter(Collection<T> values,
             Supplier<Collection<T>> supplier, Predicate<T>... predicates) {
         Objects.requireNonNull(values);
         Objects.requireNonNull(supplier);

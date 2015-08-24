@@ -86,7 +86,8 @@ public class ValidatorTest {
         }
     }
 
-    private static final Predicate<Widget>[] RULES = get(TestWidget::test, Predicate[]::new);
+    @SuppressWarnings("unchecked")
+	private static final Predicate<Widget>[] RULES = get(TestWidget::test, Predicate[]::new);
     private static final String[] REASONS = get(TestWidget::failureReason, String[]::new);
     private static final Map<Predicate<Widget>, String> RULE_MAP = IntStream.range(0, 3)
             .collect(LinkedHashMap::new, (m, i) -> m.put(RULES[i], REASONS[i]), Map::putAll);
