@@ -1,5 +1,7 @@
 # Validation
 
+[![Build Status](https://travis-ci.org/h-j-k/validation.svg?branch=master)](https://travis-ci.org/h-j-k/validation) [Javadocs](https://h-j-k.github.io/validation/apidocs)
+
 A simple validation library using Java 8's `Stream` and `Predicate`.
 
 # Motivation
