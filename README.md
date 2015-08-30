@@ -2,8 +2,7 @@
 
 A simple validation library using Java 8's `Stream` and `Predicate`.
 
-Motivation
----
+# Motivation
 
 Traditionally, validating a `POJO` before further processing may look something like:
 
@@ -42,8 +41,7 @@ Alternatively, custom reasons may be supplied for the thrown `IllegalStateExcept
                                 Rule.of(InputType::markedForProcessing, 
                                         "Not marked for processing."))).get();
 
-Bugs/feedback
----
+# Bugs/feedback
 
 Please make use of the GitHub features to report any bugs, issues, or even pull requests. :)
 
