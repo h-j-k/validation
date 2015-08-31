@@ -3,6 +3,7 @@ jdk:
 - oraclejdk8
 after_success:
 - chmod +x .travis-scripts/javadoc.sh && $_
+- bash <(curl -s https://codecov.io/bash)
 env:
   global:
     secure: BHJOdYOIlHtbe6T4AcW5zJT+wV6px0+xbcgJMr8N1GJJS65gfsaiSR5l11Vha+JaF2n1NrcmbCCUuwvAjLMDgIRrz1hvyJ0XqPQxvoEge+UnarO/oaAPE4CD6AjXZwbw7qDIdkt/0MtylhJguhPVt3mjH06a0rHM5Ez3xfZm/8gN28eb3lJbYRAgLY3NC3lLTkCE2yrSa/7VOuXF/E8Fb4/7sHfO7f7XqIKtDzWmFZ8CBu6dpbpry37sU75HFOpmN+ZP0Rd1v3hbc+h6/U6dKJuF609Cmhc2jLoonqX/WlTC66uAL6Ju3gCKPUbVoRJG3dzPfMRxLOSy1UMWa3wzBTjB+eEI85jYMjqjRVd0NTlhTLGM0OszW3JrlNJYC75vw0SJuIp+MrdvwUeTnqr4Eg7AZaxIxnimsa6mGuJfRyGLr7ce5yv8DMQCJEQauTJ4puQw/hqZuuVGI72qxtOi8idUaSQrPKP3RT40MlmJFoHCaJYa4MXfv1apowvmH/Dor+S8JwnHrF+ptHkMDGaW/1Iqxj48rPTMSI2xTsh8a6iuJZJYZjgHshMxnlfS+WJOGpuJQfmvnyN1eTiK3DCEuIlY1HdqkEkILMADyDN1j7t34l6a/q6hi7RuWmiae+OYhnGnIRmCPtwPf+hKj9wVwqtgm8Frwf/C2K7nLXxEjhg=
