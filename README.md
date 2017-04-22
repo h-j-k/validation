@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/h-j-k/validation.svg?branch=master)](https://travis-ci.org/h-j-k/validation)
 [![codecov.io](http://codecov.io/github/h-j-k/validation/coverage.svg?branch=master)](http://codecov.io/github/h-j-k/validation?branch=master)
-[Javadocs](https://h-j-k.github.io/validation/apidocs)
+[Javadocs](https://h-j-k.github.io/validation/javadoc)
 
 A simple validation library using Java 8's `Stream` and `Predicate`.
 
