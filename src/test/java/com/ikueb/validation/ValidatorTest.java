@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 h-j-k. All Rights Reserved.
+ * Copyright 2017 h-j-k. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,12 @@
  */
 package com.ikueb.validation;
 
-import static com.ikueb.validation.Validator.check;
-import static com.ikueb.validation.Validator.filter;
-import static com.ikueb.validation.Validator.notNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.testng.Assert.assertFalse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -37,10 +28,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import static com.ikueb.validation.Validator.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.testng.Assert.assertFalse;
 
 public class ValidatorTest {
 
@@ -48,6 +42,7 @@ public class ValidatorTest {
 
     public static interface Widget {
         boolean isActive();
+
         boolean isReady();
     }
 
@@ -87,7 +82,7 @@ public class ValidatorTest {
     }
 
     @SuppressWarnings("unchecked")
-	private static final Predicate<Widget>[] RULES = get(TestWidget::test, Predicate[]::new);
+    private static final Predicate<Widget>[] RULES = get(TestWidget::test, Predicate[]::new);
     private static final String[] REASONS = get(TestWidget::failureReason, String[]::new);
     private static final Map<Predicate<Widget>, String> RULE_MAP = IntStream.range(0, 3)
             .collect(LinkedHashMap::new, (m, i) -> m.put(RULES[i], REASONS[i]), Map::putAll);
@@ -110,7 +105,7 @@ public class ValidatorTest {
 
     @DataProvider(name = "widget-test-cases")
     public static Iterator<Object[]> getWidgetTestCases() {
-        return EnumSet.allOf(TestWidget.class).stream().map(v -> new Object[] { v })
+        return EnumSet.allOf(TestWidget.class).stream().map(v -> new Object[]{v})
                 .iterator();
     }
 
@@ -137,7 +132,7 @@ public class ValidatorTest {
     @Test(dataProvider = "widget-test-cases")
     public void testException(TestWidget widget) {
         try {
-            check(widget.get(), Arrays.asList(RULES), Arrays.asList(REASONS))
+            check(widget.get(), asList(RULES), asList(REASONS))
                     .ifPresent(ValidatorTest::assertReady);
         } catch (IllegalStateException e) {
             assertException(e, widget.failureReason());
@@ -172,8 +167,7 @@ public class ValidatorTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testListsOfDifferentSizesThrows() {
-        check(TestWidget.READY, Collections.singletonList(notNull()),
-                Collections.emptyList());
+        check(TestWidget.READY, singletonList(notNull()), emptyList());
     }
 
     private static final String TEST = " TEST ";
@@ -181,18 +175,42 @@ public class ValidatorTest {
 
     @DataProvider(name = "string-test-cases")
     public static Iterator<Object[]> getStringTestCases() {
-        return Arrays.asList(
-                new Object[] { null, OTHER },
-                new Object[] { "", OTHER },
-                new Object[] { " ", OTHER },
-                new Object[] { "\t", OTHER },
-                new Object[] { "\n", OTHER },
-                new Object[] { "\t\n ", OTHER },
-                new Object[] { TEST, TEST.trim() }).iterator();
+        return asList(
+                new Object[]{null, OTHER},
+                new Object[]{"", OTHER},
+                new Object[]{" ", OTHER},
+                new Object[]{"\t", OTHER},
+                new Object[]{"\n", OTHER},
+                new Object[]{"\t\n ", OTHER},
+                new Object[]{TEST, TEST.trim()}).iterator();
     }
 
-    @Test(dataProvider="string-test-cases")
+    @Test(dataProvider = "string-test-cases")
     public void testStringCases(String value, String expected) {
         assertThat(Validator.trimStringOr(value, OTHER), equalTo(expected));
+    }
+
+    @Test
+    public void testCheckWithNoPredicates() {
+        assertThat(Validator.check(new Object()).isPresent(),
+                equalTo(true));
+        assertThat(Validator.check(new Object(), (Predicate<Object>) null).isPresent(),
+                equalTo(true));
+        assertThat(Validator.check(null).isPresent(),
+                equalTo(false));
+    }
+
+    @Test
+    public void testFilterWithNoPredicates() {
+        List<Object> list = singletonList(new Object());
+        assertThat(
+                Validator.filter(list, ArrayList::new).isEmpty(),
+                equalTo(false));
+        assertThat(
+                Validator.filter(list, ArrayList::new, (Predicate<Object>) null).isEmpty(),
+                equalTo(false));
+        assertThat(
+                Validator.filter(singletonList(null), ArrayList::new),
+                equalTo(singletonList(null)));
     }
 }

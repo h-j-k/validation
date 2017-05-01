@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 h-j-k. All Rights Reserved.
+ * Copyright 2017 h-j-k. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,12 @@
  */
 package com.ikueb.validation;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * An utility class that validates a given value against {@link Predicate} 'rules' and
@@ -60,53 +54,56 @@ public final class Validator {
     }
 
     /**
-     * Validates if the value satisfies all {@link Predicate}s.
+     * Validates if the value satisfies all {@link Predicate}s. If there are no {@link Predicate}s,
+     * this returns an {@link Optional} of the input {@code value}, due to the property of vacuous truth
+     * (all {@link Predicate}s satisfies the value).
      *
-     * @param value the value to validate
+     * @param value      the value to validate
      * @param predicates the {@link Predicate}s to use
      * @return an {@link Optional} wrapper over the value
      */
     @SafeVarargs
     public static <T> Optional<T> check(T value, Predicate<T>... predicates) {
-        return Optional.ofNullable(value).filter(Stream.of(predicates)
-                .reduce((a, b) -> a.and(b)).get());
+        return Optional.ofNullable(value).filter(Arrays.stream(predicates)
+                .filter(Objects::nonNull)
+                .reduce((a, b) -> a.and(b)).orElse(t -> true));
     }
 
     /**
      * Validates if the value satisfies all {@link Predicate}s.
      *
-     * @param value the value to validate
+     * @param value          the value to validate
      * @param throwException {@code true} to throw an {@link IllegalArgumentException}
-     *            instead for validation failure
-     * @param predicates the {@link Predicate}s to use
+     *                       instead for validation failure
+     * @param predicates     the {@link Predicate}s to use
      * @return an {@link Optional} wrapper over the value
      * @throws IllegalStateException with the message
-     *             {@code "Validation rule #N failed"}, where {@code N} is the index
-     *             (1-based) of the failed {@link Predicate}, when the validation fails
+     *                               {@code "Validation rule #N failed"}, where {@code N} is the index
+     *                               (1-based) of the failed {@link Predicate}, when the validation fails
      */
     @SafeVarargs
     public static <T> Optional<T> check(T value, boolean throwException,
-            Predicate<T>... predicates) {
+                                        Predicate<T>... predicates) {
         Objects.requireNonNull(predicates);
         if (!throwException) {
             return check(value, predicates);
         }
         return check(value, toRules(predicates.length, (rules, i) ->
-            rules.add(Trigger.of(predicates[i], i + 1))));
+                rules.add(Trigger.of(predicates[i], i + 1))));
     }
 
     /**
      * Validates if the value satisfies all {@link Predicate}s.
      *
-     * @param value the value to validate
+     * @param value      the value to validate
      * @param predicates the {@link Predicate}s to use
-     * @param reasons the the coresponding reasons to use
+     * @param reasons    the the coresponding reasons to use
      * @return an {@link Optional} wrapper over the value
      * @throws IllegalStateException with the message given by the corresponding reason
-     *             supplied, when the validation fails
+     *                               supplied, when the validation fails
      */
     public static <T> Optional<T> check(T value, List<Predicate<T>> predicates,
-            List<String> reasons) {
+                                        List<String> reasons) {
         Objects.requireNonNull(predicates);
         Objects.requireNonNull(reasons);
         if (predicates.size() != reasons.size()) {
@@ -122,18 +119,18 @@ public final class Validator {
      * {@link Map#entrySet()}, hence it is recommended that the implementation has a
      * predictable iteration order.
      *
-     * @param value the value to validate
+     * @param value         the value to validate
      * @param validationMap a {@link Map} of {@link Predicate}s to failure reasons
      * @return an {@link Optional} wrapper over the value
      * @throws IllegalStateException with the message given by the corresponding reason
-     *             supplied, when the validation fails
+     *                               supplied, when the validation fails
      */
     public static <T> Optional<T> check(T value,
-            Map<Predicate<T>, String> validationMap) {
+                                        Map<Predicate<T>, String> validationMap) {
         Objects.requireNonNull(validationMap);
         return check(value, validationMap.entrySet().stream()
-                        .map(entry -> Trigger.of(entry.getKey(), entry.getValue()))
-                        .collect(Collectors.toList()));
+                .map(entry -> Trigger.of(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -143,7 +140,7 @@ public final class Validator {
      * @param rules the {@link Trigger}s to validate with
      * @return an {@link Optional} wrapper over the value
      * @throws IllegalStateException with the message given by the corresponding reason
-     *             supplied, when the validation fails
+     *                               supplied, when the validation fails
      */
     public static <T> Optional<T> check(T value, List<Trigger<T>> rules) {
         Objects.requireNonNull(rules);
@@ -158,32 +155,36 @@ public final class Validator {
 
     /**
      * Validates on a {@link Collection} of values to return the subset of it that are
-     * successfully validated.
+     * successfully validated. If there are no {@link Predicate}s, this returns an {@link Optional}
+     * of the input {@code value}, due to the property of vacuous truth
+     * (all {@link Predicate}s satisfies the value).
      *
-     * @param values the values to validate
-     * @param supplier the supplier for the resulting {@link Collection}
+     * @param values     the values to validate
+     * @param supplier   the supplier for the resulting {@link Collection}
      * @param predicates the {@link Predicate}s to use
      * @return a {@link Collection} of validated values
      */
     @SafeVarargs
-	public static <T> Collection<T> filter(Collection<T> values,
-            Supplier<Collection<T>> supplier, Predicate<T>... predicates) {
+    public static <T> Collection<T> filter(Collection<T> values,
+                                           Supplier<Collection<T>> supplier, Predicate<T>... predicates) {
         Objects.requireNonNull(values);
         Objects.requireNonNull(supplier);
         Objects.requireNonNull(predicates);
         return values.stream()
-                .filter(Stream.of(predicates).reduce((a, b) -> a.and(b)).get())
+                .filter(Arrays.stream(predicates)
+                        .filter(Objects::nonNull)
+                        .reduce((a, b) -> a.and(b)).orElse(t -> true))
                 .collect(Collectors.toCollection(supplier));
     }
 
     /**
      * @param endExclusive the exclusive upper bound to
-     *            {@link IntStream#range(int, int)}
-     * @param accumulator the accumulator to use
+     *                     {@link IntStream#range(int, int)}
+     * @param accumulator  the accumulator to use
      * @return a {@link List} of {@link Trigger}s
      */
     private static <T> List<Trigger<T>> toRules(int endExclusive,
-            ObjIntConsumer<List<Trigger<T>>> accumulator) {
+                                                ObjIntConsumer<List<Trigger<T>>> accumulator) {
         return IntStream.range(0, endExclusive).collect(ArrayList::new,
                 accumulator, List::addAll);
     }
