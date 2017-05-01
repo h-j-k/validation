@@ -2,8 +2,13 @@
 
 [![Build Status](https://travis-ci.org/h-j-k/validation.svg?branch=master)](https://travis-ci.org/h-j-k/validation)
 [![codecov.io](http://codecov.io/github/h-j-k/validation/coverage.svg?branch=master)](http://codecov.io/github/h-j-k/validation?branch=master)
+[![Quality Gate](https://sonarqube.com/api/badges/gate?key=com.ikueb:validation)](https://sonarqube.com/dashboard/?id=com.ikueb:validation)
+[![Technical Debt Ratio](https://sonarqube.com/api/badges/measure?key=com.ikueb:validation&metric=sqale_debt_ratio)](https://sonarqube.com/dashboard/?id=com.ikueb:validation)
+[![Comments](https://sonarqube.com/api/badges/measure?key=com.ikueb:validation&metric=comment_lines_density)](https://sonarqube.com/dashboard/?id=com.ikueb:validation)
 
 A simple validation library using Java 8's `Stream` and `Predicate`.
+
+[Homepage](https://h-j-k.github.io/validation)
 
 [GitHub project page](https://github.com/h-j-k/validation)
 
