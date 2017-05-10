@@ -35,13 +35,6 @@ public final class Validator {
     }
 
     /**
-     * @return a {@link Predicate} that test for a non-{@code null} value.
-     */
-    public static final <T> Predicate<T> notNull() {
-        return o -> o != null;
-    }
-
-    /**
      * Validates if a {@link String} is not null and not empty when trimmed.
      *
      * @param value the value to validate
@@ -49,7 +42,7 @@ public final class Validator {
      * @return the original {@link String} trimmed, or the other value
      */
     public static String trimStringOr(String value, String other) {
-        return check(value, notNull(), s -> !s.trim().isEmpty())
+        return check(value, Objects::nonNull, s -> !s.trim().isEmpty())
                 .map(String::trim).orElse(other);
     }
 

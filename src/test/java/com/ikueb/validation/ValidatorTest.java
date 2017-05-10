@@ -47,7 +47,7 @@ public class ValidatorTest {
     }
 
     enum TestWidget implements Widget {
-        NULL(notNull()),
+        NULL(Objects::nonNull),
         INACTIVE(Widget::isActive),
         NOT_READY(Widget::isReady),
         READY(w -> true);
@@ -156,18 +156,18 @@ public class ValidatorTest {
     @Test
     public void testFilter() {
         assertThat(filter(EnumSet.allOf(TestWidget.class), HashSet::new,
-                notNull(), Widget::isActive, Widget::isReady),
+                Objects::nonNull, Widget::isActive, Widget::isReady),
                 equalTo(EnumSet.of(TestWidget.READY)));
     }
 
     @Test
     public void testOppositeRules() {
-        assertFalse(check(null, v -> v == null, notNull()).isPresent());
+        assertFalse(check(null, v -> v == null, Objects::nonNull).isPresent());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testListsOfDifferentSizesThrows() {
-        check(TestWidget.READY, singletonList(notNull()), emptyList());
+        check(TestWidget.READY, singletonList(Objects::nonNull), emptyList());
     }
 
     private static final String TEST = " TEST ";
