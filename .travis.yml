@@ -20,5 +20,5 @@ deploy:
   on:
     branch: master
 after_success:
-- gradle generateJavadoc && cp "$TRAVIS_BUILD_DIR/README.md" "$TRAVIS_BUILD_DIR/build/docs"
+- gradle generateJavadoc && cp "$TRAVIS_BUILD_DIR/README.md" "$TRAVIS_BUILD_DIR/build/docs" && ls -ld "$TRAVIS_BUILD_DIR/build/docs"
 - gradle jacocoTestReport sonarqube && bash <(curl -s https://codecov.io/bash)
