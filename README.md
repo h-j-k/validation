@@ -31,8 +31,9 @@ Traditionally, validating a `POJO` before further processing may look something 
 
 Using Java 8's `Predicate` reduces the boilerplate-like code, and arguably more fluent as well:
 
-    T payload = Optional.ofNullable(input).filter(correctValue.equals(v.field)
-                                            && v.markedForProcessing())
+    T payload = Optional.ofNullable(input)
+                        .filter(correctValue.equals(v.field)
+                                    && v.markedForProcessing())
                         .orElseThrow(IllegalStateException::new);
 
 The Validator library abstracts out the checks as a series of `Predicate`s instead:
