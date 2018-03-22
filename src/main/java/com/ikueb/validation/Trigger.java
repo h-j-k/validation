@@ -35,11 +35,10 @@ public final class Trigger<T> implements Predicate<T> {
     }
 
     static <T> Trigger<T> of(Predicate<T> successCase, int index) {
-        return of(successCase, String.format(FAIL_REASON, Integer.valueOf(index)));
+        return of(successCase, String.format(FAIL_REASON, index));
     }
 
-    static <T> Trigger<T> of(Predicate<T> successCase,
-            String failureReason) {
+    static <T> Trigger<T> of(Predicate<T> successCase, String failureReason) {
         return new Trigger<>(successCase, failureReason);
     }
 

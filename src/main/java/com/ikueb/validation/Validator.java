@@ -57,9 +57,8 @@ public final class Validator {
      */
     @SafeVarargs
     public static <T> Optional<T> check(T value, Predicate<T>... predicates) {
-        return Optional.ofNullable(value).filter(Arrays.stream(predicates)
-                .filter(Objects::nonNull)
-                .reduce((a, b) -> a.and(b)).orElse(t -> true));
+        Objects.requireNonNull(predicates);
+        return Optional.ofNullable(value).filter(andAll(predicates));
     }
 
     /**
@@ -143,7 +142,7 @@ public final class Validator {
             throw new IllegalStateException(Objects.toString(failed.get(),
                     "Validation failed."));
         }
-        return Optional.of(value);
+        return Optional.ofNullable(value);
     }
 
     /**
@@ -164,10 +163,20 @@ public final class Validator {
         Objects.requireNonNull(supplier);
         Objects.requireNonNull(predicates);
         return values.stream()
-                .filter(Arrays.stream(predicates)
-                        .filter(Objects::nonNull)
-                        .reduce((a, b) -> a.and(b)).orElse(t -> true))
+                .filter(andAll(predicates))
                 .collect(Collectors.toCollection(supplier));
+    }
+
+    /**
+     * @param predicates the {@link Predicate}s to use
+     * @return a combined {@link Predicate} that performs a logical AND with the arguments
+     */
+    @SafeVarargs
+    private static <T> Predicate<T> andAll(Predicate<T>... predicates) {
+        return Arrays.stream(predicates)
+                .filter(Objects::nonNull)
+                .reduce(Predicate::and)
+                .orElse(t -> true);
     }
 
     /**
@@ -178,7 +187,7 @@ public final class Validator {
      */
     private static <T> List<Trigger<T>> toRules(int endExclusive,
                                                 ObjIntConsumer<List<Trigger<T>>> accumulator) {
-        return IntStream.range(0, endExclusive).collect(ArrayList::new,
-                accumulator, List::addAll);
+        return IntStream.range(0, endExclusive)
+                .collect(ArrayList::new, accumulator, List::addAll);
     }
 }

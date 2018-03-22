@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/h-j-k/validation.svg?branch=master)](https://travis-ci.org/h-j-k/validation)
 [![codecov.io](http://codecov.io/github/h-j-k/validation/coverage.svg?branch=master)](http://codecov.io/github/h-j-k/validation?branch=master)
-[![Quality Gate](https://sonarqube.com/api/badges/gate?key=com.ikueb:validation)](https://sonarqube.com/dashboard/?id=com.ikueb:validation)
-[![Technical Debt Ratio](https://sonarqube.com/api/badges/measure?key=com.ikueb:validation&metric=sqale_debt_ratio)](https://sonarqube.com/dashboard/?id=com.ikueb:validation)
-[![Comments](https://sonarqube.com/api/badges/measure?key=com.ikueb:validation&metric=comment_lines_density)](https://sonarqube.com/dashboard/?id=com.ikueb:validation)
+[![Quality Gate](https://sonarcloud.io/api/badges/gate?key=com.ikueb:validation)](https://sonarcloud.io/dashboard/?id=com.ikueb:validation)
+[![Technical Debt Ratio](https://sonarcloud.io/api/badges/measure?key=com.ikueb:validation&metric=sqale_debt_ratio)](https://sonarcloud.io/dashboard/?id=com.ikueb:validation)
+[![Comments](https://sonarcloud.io/api/badges/measure?key=com.ikueb:validation&metric=comment_lines_density)](https://sonarcloud.io/dashboard/?id=com.ikueb:validation)
 
 A simple validation library using Java 8's `Stream` and `Predicate`.
 
@@ -19,20 +19,19 @@ A simple validation library using Java 8's `Stream` and `Predicate`.
 Traditionally, validating a `POJO` before further processing may look something like:
 
     if (input == null) {
-        return;
+        throw new IllegalStateException();
     }
     if (!correctValue.equals(input.field)) {
-        throw new IllegalStateException("Incorrect field value.");
+        throw new IllegalStateException();
     }
     if (!input.markedForProcessing()) {
-        // ...
+        throw new IllegalStateException();
     }
     // ...
 
 Using Java 8's `Predicate` reduces the boilerplate-like code, and arguably more fluent as well:
 
-    T payload = Optional.of(input).filter(v -> v != null
-                                            && correctValue.equals(v.field)
+    T payload = Optional.ofNullable(input).filter(correctValue.equals(v.field)
                                             && v.markedForProcessing())
                         .orElseThrow(IllegalStateException::new);
 
